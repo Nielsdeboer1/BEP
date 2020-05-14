@@ -2,6 +2,7 @@
    All components for this page are placed on this widget."""
 import os
 import pathlib
+import math
 from PyQt5 import QtWidgets, QtCore, QtGui
 from pyqt_led import Led                                        #pylint: disable=W0611
 
@@ -26,8 +27,7 @@ class MapLayout(QtWidgets.QWidget):
         self.y_pos = [int(height * y) for y in [0.06, 0.060, 0.06, 0.26, 0.32, 
                                                 0.62, 0.765, 0.78, 0.78]]
         self.diameter = int(width * 0.03)
-
-        self.value_progress_bar = 51
+        self.value_progress_bar = 50
 
         self.create_leds()
         self.create_progress_bar(self.value_progress_bar, width, height)
@@ -59,33 +59,32 @@ class MapLayout(QtWidgets.QWidget):
     
         self.map_picture = QtWidgets.QLabel(self)
         self.map_picture.setGeometry(QtCore.QRect(0, 0, width, height))
-        #rel = '../../img/bg_1.jpg'
-        #path = os.path.join(pathlib.Path(__file__).parent.absolute(), rel)
-        #print(path)
         self.map_picture.setPixmap(QtGui.QPixmap(self.base_path + 'bg_1.jpg'))
         self.map_picture.setScaledContents(True)
         self.map_picture.lower()
 
-    def get_current_values(self, solar, wind, demand):
+    def get_current_values(self, readings):
         """Update the map to match with the current data.
            Use multiple other functions to accomplish this."""
-        self.update_progress_bar(solar + wind - demand)
+        solar = readings[0]
+        wind = readings[1] 
+        demand = readings[2]
+        self.update_progress_bar(readings[3])
         self.update_background(solar, demand)
         self.update_leds(solar, wind, demand, solar + wind - demand)
     
     def update_progress_bar(self, val):
         """Update the progress bar to match with the current data."""
-        val = val / 10
-        self.value_progress_bar = max(min(self.value_progress_bar + val, 100), 0) 
-        self.storage_bar.setProperty('value', int(self.value_progress_bar))
+        self.storage_bar.setProperty('value', val)
         self.storage_bar.update()
+        self.value_progress_bar = val
     
     def update_background(self, solar_power, power_demand):
         """Update the background to match with the current data."""
         solar_power = round(solar_power, 0)
         power_demand = round(power_demand, 0) if self.value_progress_bar > 0 else 0
 
-        val = int(6 + min(power_demand, 4) if solar_power > 2 else 1 + min(power_demand, 4)) 
+        val = 6 + min(math.floor(power_demand / 20), 4) if solar_power > 50 else 1 + min(math.floor(power_demand / 20), 4) #pylint: disable=line-too-long
         self.map_picture.setPixmap(QtGui.QPixmap(self.base_path + f"bg_{str(val)}.jpg"))
     
     def update_leds(self, solar, wind, demand, diff):
@@ -99,22 +98,22 @@ class MapLayout(QtWidgets.QWidget):
         elif diff < 0 and self.value_progress_bar > 0:
             led_list.append(7)
         
-        if solar > 2:
+        if solar > 50:
             led_list.append(8)
             led_list.append(9)
         
-        if wind > 1.5:
+        if wind > 50:
             led_list.append(4)
             led_list.append(6)
         
-        if demand > 4 and self.value_progress_bar > 0:
+        if demand > 75 and self.value_progress_bar > 0:
             led_list.append(2)
             led_list.append(3)
             led_list.append(5)
-        elif demand > 3 and self.value_progress_bar > 0:
+        elif demand > 50 and self.value_progress_bar > 0:
             led_list.append(3)
             led_list.append(5)
-        elif demand >= 1 and self.value_progress_bar > 0:
+        elif demand >= 25 and self.value_progress_bar > 0:
             led_list.append(5)
         
         for led in range(1, len(self.x_pos) + 1):
