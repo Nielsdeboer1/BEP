@@ -52,23 +52,20 @@ turbine_thrust = 1000*0.5*rho*(pi/4*diameter_fan^2)*air_speed_turbine_in^2*C_T; 
 turbine_torque = turbine_thrust*diameter_fan/2;
 fprintf('Torque deliverd by turbine:          %.2f mNm \n',turbine_torque) %given lambda = 2.1
 
-max_torque = 11.67; %mNm
-noload_voltage = 0;
-min_current = 0.05; %A
-max_current = 0.54; %A
-nominal_voltage = 12; %V
+% max_torque = 11.67; %mNm
+% min_current = 0.05; %A
+% max_current = 0.54; %A
+% nominal_voltage = 12; %V
+nominal_voltage = 3; %V
+noload_voltage = 1.7; %V
+max_torque = 1; %mNm
+min_current = 0.11; %A
+max_current = 1.16; %A
 
-% nominal_voltage = 3; %V
-% noload_voltage = 1.7; %V
-% max_torque = 1; %mNm
-% min_current = 0.11; %A
-% max_current = 1.16; %A
+%%%%% Kt estimates %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%% Kt and torque estimates %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-omega_noload = 220*2*pi; %rad/s
-K_v = omega_noload/(nominal_voltage - noload_voltage);
-K_t = 60*1000/(2*pi*K_v); %mNm/A
-fprintf('estimated torque constant:           %.2f mNm/A \n',K_t)
+K_v = omega_noload/nominal_voltage;
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 k_t_motor = (max_torque)/(max_current-min_current); %mNm/A
